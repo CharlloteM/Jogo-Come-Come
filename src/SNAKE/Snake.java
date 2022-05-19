@@ -18,7 +18,7 @@ public class Snake extends JFrame
         // A localização
         setLocationRelativeTo(null);
         // O titulo da janela
-        setTitle("Jogo da Cobrinha");
+        setTitle("Come-Come Game");
 
         // Impede o redimensionamento da janela
         setResizable(false);

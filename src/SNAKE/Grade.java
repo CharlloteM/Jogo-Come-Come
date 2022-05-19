@@ -59,7 +59,10 @@ public class Grade extends JPanel implements ActionListener
     private boolean down = false;
 
     // Denifição do status do jogo
-    private boolean estaJogando = true;
+    private boolean estaJogando = false;
+    private boolean inicio = true;
+    private boolean pauseGame = false;
+    private boolean startGato = false;
 
     // Tempo de execução do jogo
     private Timer tempo;
@@ -68,7 +71,21 @@ public class Grade extends JPanel implements ActionListener
     private Image bola;
     private Image comida;
     private Image cabeça;
+    private Image fundo;
+    private Image fundoFinal;
+    private Image fundoInicio;
+    
+    // skin do gato
+    private Image cabecaGato;
+    private Image corpoGato;
+    private Image peixeGato;
+    
+    // skin da cobra
+    private Image cabecaCobra;
+    private Image corpoCobra;
+    private Image macaCobra;
   
+        
     // Método construtor da classe
     public Grade ()
     {
@@ -76,26 +93,55 @@ public class Grade extends JPanel implements ActionListener
         addKeyListener(new TAdapter());
        
         // Seta o plano de fundo como preto
-        setBackground(Color.black);
+        //setBackground(Color.black);
         
-       
-        // Cria um icone do arquivo png e seta na imagem correspondente
-        ImageIcon bola_ = new ImageIcon("bola.png");
-        bola = bola_.getImage();
+        // Cria um plano de fundo no inicio do jogo png com a imagem correspondente
+        ImageIcon fundoInicio_ = new ImageIcon("fundoInicio.png");
+        fundoInicio = fundoInicio_.getImage();
+        
+        // Cria um plano de fundo no jogo png com a imagem correspondente
+        ImageIcon fundo_ = new ImageIcon("fundo.png");
+        fundo = fundo_.getImage();      
+        
+        // Cria um plano de fundo no final do jogo png com a imagem correspondente
+        ImageIcon fundoFinal_ = new ImageIcon("fundoFinal.png");
+        fundoFinal = fundoFinal_.getImage();
+               
+        // Cria um icone do arquivo png e seta na imagem correspondente //cobrinha
+        ImageIcon corpoCobra_ = new ImageIcon("corpoCobra.png");
+        corpoCobra = corpoCobra_.getImage();
 
-        // Cria um icone do arquivo png e seta na imagem correspondente
-        ImageIcon comida_ = new ImageIcon("comida.png");
-        comida = comida_.getImage();
+        // Cria um icone do arquivo png e seta na imagem correspondente //cobrinha
+        ImageIcon macaCobra_ = new ImageIcon("macaCobra.png");
+        macaCobra = macaCobra_.getImage();
 
-        // Cria um icone do arquivo png e seta na imagem correspondente
-        ImageIcon cabeça_ = new ImageIcon("cabeça.png");
-        cabeça = cabeça_.getImage();
+        // Cria um icone do arquivo png e seta na imagem correspondente //cobrinha
+        ImageIcon cabecaCobra_ = new ImageIcon("cabecaCobra.png");
+        cabecaCobra = cabecaCobra_.getImage();
+        
+        // Cria um icone do arquivo png e seta na imagem correspondente //gato
+        ImageIcon corpoGato_ = new ImageIcon("corpoGato.png");
+        corpoGato = corpoGato_.getImage();
+
+        // Cria um icone do arquivo png e seta na imagem correspondente //gato
+        ImageIcon peixeGato_ = new ImageIcon("peixeGato.png");
+        peixeGato = peixeGato_.getImage();
+
+        // Cria um icone do arquivo png e seta na imagem correspondente //gato
+        ImageIcon cabecaGato_ = new ImageIcon("cabecaGato.png");
+        cabecaGato = cabecaGato_.getImage();
 
         // Define o foco para o JPanel
         setFocusable(true);
         // Define o tamanho da tela
         setSize(WIDTH_, HEIGHT_);
 
+        //trocando valores dos nomes bola, cabeça e comida
+        bola = corpoCobra;
+        cabeça = cabecaCobra;
+        comida = macaCobra;
+        
+        
         // Inicializa do jogo
         initJogo();
     }
@@ -120,6 +166,27 @@ public class Grade extends JPanel implements ActionListener
         tempo = new Timer(DELAY, this);
         tempo.start();
     }
+    
+    // método para reiniciar o jogo
+    public void reiniciarJogo() 
+    {
+        // Define quantidade de pontos iniciais
+    	pontos = 3;
+    	
+        // Definição do plano cartesiano (x,y) do jogo
+    	x = new int[TODOS_PONTOS];
+       	y = new int[TODOS_PONTOS];
+    	
+        // Define a posição em (x,y) de cada ponto
+        for (int i = 0; i < pontos; i++)
+        {
+            x[i] = 100 - i*21;
+            y[i] = 100;
+        }
+        
+        // Gera a primeira comida
+        localComida();
+    }
 
     // Método para desenhar elementos na tela do jogo
     @Override
@@ -127,11 +194,14 @@ public class Grade extends JPanel implements ActionListener
     {
         // Define o atribuito para a classe própria
         super.paint(g);
-
+                      
         // Analisa se o jogo esta em andamento, se estiver desenha na tela,
         // se não estiver, o jogo é dado como o fim
         if (estaJogando)
-        {
+        {           
+            // Desenha o plano do jogo
+            g.drawImage(fundo, 0, 0, this); 
+
             // Desenha a comida no plano (x,y) do jogo
             g.drawImage(comida, comida_x, comida_y, this);
 
@@ -147,14 +217,16 @@ public class Grade extends JPanel implements ActionListener
 
             // Desenha a pontuação na tela
             desenharPontuacao(g);
-
+            
             // Executa a sincronia de dados
             Toolkit.getDefaultToolkit().sync();
 
             // Pausa os gráficos
             g.dispose();
         }
-        else
+        else if(inicio) {
+            g.drawImage(fundoInicio, 0, 0, this); 
+        } else 
         {
             // Executa o fim de jogo
             FimDeJogo(g);
@@ -179,8 +251,10 @@ public class Grade extends JPanel implements ActionListener
 
     public void FimDeJogo (Graphics g)
     {
-        // Define a frase para escrever
-        String msg = "FIM DE JOGO! Sua pontuação: " + PONTUAÇÃO;
+        // Desenha o plano do final do jogo
+        g.drawImage(fundoFinal, 0, 0, this);
+    	// Define a frase para escrever
+        String msg = "Sua pontuação: " + PONTUAÇÃO;
         // Define o estilo da fonte
         Font pequena = new Font("Consolas", Font.BOLD, 14);
         // Define o tamanho da fonte
@@ -191,7 +265,7 @@ public class Grade extends JPanel implements ActionListener
         // Seta a fonte para o gráfico
         g.setFont(pequena);
         // Desenha a fonte na tela
-        g.drawString(msg, (WIDTH_ - metrica.stringWidth(msg)) / 2, HEIGHT_ / 2);
+        g.drawString(msg, (WIDTH_ - metrica.stringWidth(msg)) / 2 , 305);
     }
 
     // Método para checar se a cobrinha comeu a comida
@@ -202,7 +276,18 @@ public class Grade extends JPanel implements ActionListener
         if ((x[0] == comida_x) && (y[0] == comida_y))
         {
             pontos++;
-            PONTUAÇÃO++;
+            //PONTUAÇÃO++;
+            if(cabeça.equals(cabecaCobra))
+            {
+            	PONTUAÇÃO += 20;
+            	pontos += 3;
+            	
+            } else if(cabeça.equals(cabecaGato))
+            {
+            	PONTUAÇÃO += 30;
+            	pontos += 6;
+            }
+           
             localComida();
         }
     }
@@ -339,6 +424,49 @@ public class Grade extends JPanel implements ActionListener
                 down = true;
                 left = false;
                 right = false;
+            }
+            //tela de inicio do jogo
+            if ((key == KeyEvent.VK_SPACE))
+            {
+            	if (inicio) {
+                inicio = false;
+                estaJogando = true;
+            	} else if(!inicio && !estaJogando) {
+                    inicio = true;
+                    estaJogando = false;
+                    
+                    reiniciarJogo();
+            	}
+            }
+            
+            // pausando jogo com a tecla ESC
+            if ((key == KeyEvent.VK_ESCAPE) && (estaJogando))
+            {
+            	if(pauseGame == false) 
+            	{
+                    tempo.stop();
+                    pauseGame = true;
+            	}
+            	else if(pauseGame == true) 
+            	{
+                    tempo.restart();
+                    pauseGame = false;
+            	}
+            }
+            
+            //botão para mudar skin tecla G
+            if ((key == KeyEvent.VK_G) && (estaJogando))
+            {
+                cabeça = cabecaGato;
+                bola = corpoGato;
+                comida = peixeGato;
+            }
+            //botão para mudar skin tecla C
+            if ((key == KeyEvent.VK_C) && (estaJogando))
+            {
+                cabeça = cabecaCobra;
+                bola = corpoCobra;
+                comida = macaCobra;
             }
         }
     }
